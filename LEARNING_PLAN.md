@@ -164,24 +164,36 @@ usually the most exciting phase for a beginner.
   pixel positions
 
 **What you build:** A window with a `QLabel` display and buttons
-`0`–`9`, `+ - × ÷`, `=`, `C`. Clicking a digit **appends its text**
-directly onto the label (no real math logic yet — that's next phase).
-This intentionally separates "I can make Qt react to clicks" from
-"I can compute the right answer."
+`0`–`9`, `+ - × ÷`, `=`, `C`, `⌫` (backspace). Clicking a digit or
+operator **appends its text** directly onto the label.
+
+> **Bonus, slightly ahead of the original plan:** `=` does a quick,
+> *left-to-right* calculation (reusing Phase 1's `calculate()` logic,
+> just with `QChar` operators instead of `char`), and `⌫` deletes the
+> single most-recently-typed character. This makes the calculator
+> actually usable sooner, at the cost of jumping the gun a little - it
+> doesn't yet know `×`/`÷` should happen before `+`/`-` (e.g. `3+4×2`
+> currently evaluates to `14`, not `11`). Phase 3's `Equation` class is
+> still where *real*, precedence-aware math logic belongs; Phase 4 will
+> swap this quick version out for it.
 
 **Architecture at this point:**
 ```mermaid
 graph TD
     MainWindow["MainWindow\n(QWidget + buttons + QLabel display)"]
     User(("🧑 You")) -->|"clicks"| MainWindow
-    MainWindow -->|"directly edits text"| MainWindow
+    MainWindow -->|"directly edits text, and does a simple\nleft-to-right calculation on ="| MainWindow
 ```
 *(Notice: no separate "brain" yet — the window edits its own display
-text directly. That's OK for now; Phase 3-4 will fix it.)*
+text directly, and the quick calculate() helper lives right in
+mainwindow.cpp. Phase 3-4 will give it a proper home.)*
 
-**Milestone:** Clicking digits builds up a number string on screen,
-`C` clears it. ✅ Done — `src/mainwindow.h` / `src/mainwindow.cpp` hold the
-`MainWindow` class, `src/main.cpp` just starts the `QApplication`.
+**Milestone:** Clicking digits builds up a number string on screen, `C`
+clears it, `⌫` deletes the last character, and `=` computes a real
+left-to-right result (e.g. `8+8=` shows `16`, `5÷0=` shows a friendly
+error instead of crashing). ✅ Done — `src/mainwindow.h` /
+`src/mainwindow.cpp` hold the `MainWindow` class, `src/main.cpp` just
+starts the `QApplication`.
 
 **Steps to run Phase 2 (type these in a terminal, from this folder):**
 1. **Configure** — this time CMake also needs to find Qt, and needs to be
@@ -198,11 +210,18 @@ text directly. That's OK for now; Phase 3-4 will fix it.)*
    ```
    cmake --build build
    ```
-3. **Run** — Qt's `.dll` files need to be on `PATH` for the `.exe` to
-   find them (only needed because we didn't install Qt "for real" with
-   the installer, which would offer to do this for you):
+3. **Deploy Qt's DLLs next to the `.exe`** — without this step, running
+   the `.exe` fails with a "Systemfehler"/"the code execution cannot
+   proceed" popup, because Windows can't find `Qt6Core.dll` and friends
+   (they live in `C:\Qt\6.9.3\mingw_64\bin`, which isn't on `PATH`).
+   `windeployqt` copies everything the `.exe` needs right next to it, so
+   this only needs to be re-run after a **clean** build (a fresh `build`
+   folder) — not after every single `cmake --build`:
    ```
-   $env:Path = "C:\Qt\6.9.3\mingw_64\bin;" + $env:Path
+   C:\Qt\6.9.3\mingw_64\bin\windeployqt.exe --no-translations .\build\CalculatorTutorial.exe
+   ```
+4. **Run:**
+   ```
    .\build\CalculatorTutorial.exe
    ```
 
