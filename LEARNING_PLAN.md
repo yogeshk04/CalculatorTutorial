@@ -18,7 +18,7 @@ project grow, one commit at a time.
 |---|---|---|
 | CMake | ✅ installed (4.4.2) | Build system: turns source files into a program |
 | C++ compiler (MinGW-w64 g++ 16.2, UCRT) | ✅ found at `C:\mingw64-toolchain\mingw64\bin` | Turns C++ text into an `.exe` |
-| Qt 6 (Widgets) | ❌ not installed yet | Only needed starting **Phase 2**. Install via the [Qt Online Installer](https://www.qt.io/download-qt-installer), choosing the **MinGW 64-bit** kit (must match the compiler above) and the **Qt Widgets** component. |
+| Qt 6 (Widgets) | ✅ installed (6.9.3, MinGW 64-bit) at `C:\Qt\6.9.3\mingw_64` | Installed non-interactively with [aqtinstall](https://github.com/miurahr/aqtinstall) instead of the GUI installer: `pip install aqtinstall`, then `python -m aqt install-qt windows desktop 6.9.3 win64_mingw --outputdir C:\Qt`. Matches the MinGW-w64 UCRT compiler above. |
 | Editor | Your choice | VS Code (with the C/C++ and CMake Tools extensions) or Qt Creator both work great. |
 
 We already proved the CMake + compiler combo works: a "Hello World"
@@ -180,7 +180,31 @@ graph TD
 text directly. That's OK for now; Phase 3-4 will fix it.)*
 
 **Milestone:** Clicking digits builds up a number string on screen,
-`C` clears it.
+`C` clears it. ✅ Done — `src/mainwindow.h` / `src/mainwindow.cpp` hold the
+`MainWindow` class, `src/main.cpp` just starts the `QApplication`.
+
+**Steps to run Phase 2 (type these in a terminal, from this folder):**
+1. **Configure** — this time CMake also needs to find Qt, and needs to be
+   pointed at the 64-bit compiler explicitly, because this machine also
+   has an older 32-bit `C:\MinGW\bin` earlier on `PATH`:
+   ```
+   cmake -S . -B build -G "MinGW Makefiles" ^
+     -DCMAKE_CXX_COMPILER="C:/mingw64-toolchain/mingw64/bin/g++.exe" ^
+     -DCMAKE_PREFIX_PATH="C:/Qt/6.9.3/mingw_64"
+   ```
+   (`CMakeLists.txt` also falls back to that same `CMAKE_PREFIX_PATH`
+   automatically if you forget the flag.)
+2. **Build:**
+   ```
+   cmake --build build
+   ```
+3. **Run** — Qt's `.dll` files need to be on `PATH` for the `.exe` to
+   find them (only needed because we didn't install Qt "for real" with
+   the installer, which would offer to do this for you):
+   ```
+   $env:Path = "C:\Qt\6.9.3\mingw_64\bin;" + $env:Path
+   .\build\CalculatorTutorial.exe
+   ```
 
 ---
 
