@@ -23,5 +23,11 @@ qt_add_executable(CalculatorTutorial
     src/main.cpp
     src/mainwindow.h
     src/mainwindow.cpp
+    src/equation.h
+    src/equation.cpp
+    src/equationqueue.h
+    src/equationqueue.cpp
+    src/display.h
+    src/display.cpp
 )
 target_link_libraries(CalculatorTutorial PRIVATE Qt6::Widgets)

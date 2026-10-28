@@ -14,12 +14,13 @@
 
 #include <QWidget>
 
+#include "display.h"
+#include "equation.h"
+#include "equationqueue.h"
+
 class QLabel;
 class QPushButton;
 
-// Q_OBJECT is required on any class that wants to use signals & slots.
-// It marks the class for Qt's "moc" (meta-object compiler) code
-// generator, which CMake runs automatically for us (CMAKE_AUTOMOC).
 class MainWindow : public QWidget
 {
     Q_OBJECT
@@ -28,8 +29,6 @@ public:
     explicit MainWindow(QWidget *parent = nullptr);
 
 private slots:
-    // One slot handles every digit/operator button: each button "knows"
-    // its own text, so we just read button->text() and append it.
     void appendButtonText();
     void clearDisplay();
     void backspace();
@@ -40,9 +39,9 @@ private:
     QPushButton *addButton(const QString &text, int row, int column, int columnSpan = 1);
 
     QLabel *m_display = nullptr;
-    // True right after "=" is pressed: lets the next button decide
-    // whether to start a fresh number (digit) or keep building onto the
-    // result (operator), like a real calculator does.
+    Display *m_historyDisplay = nullptr;
+    Equation m_equation;
+    EquationQueue m_history;
     bool m_justEvaluated = false;
 };
 
